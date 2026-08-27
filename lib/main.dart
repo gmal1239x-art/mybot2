@@ -4,8 +4,25 @@ void main() {
   runApp(const ZakiFoodApp());
 }
 
-class ZakiFoodApp extends StatelessWidget {
+// 🌐 متغيرات عامة للتحكم في ثيم ولون التطبيق ديناميكياً
+Color primaryAppColor = const Color(0xFFE5293E);
+
+class ZakiFoodApp extends StatefulWidget {
   const ZakiFoodApp({super.key});
+
+  static _ZakiFoodAppState of(BuildContext context) =>
+      context.findAncestorStateOfType<_ZakiFoodAppState>()!;
+
+  @override
+  State<ZakiFoodApp> createState() => _ZakiFoodAppState();
+}
+
+class _ZakiFoodAppState extends State<ZakiFoodApp> {
+  void changeThemeColor(Color newColor) {
+    setState(() {
+      primaryAppColor = newColor;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +33,8 @@ class ZakiFoodApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFFF6F8FA),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFE5293E),
-          primary: const Color(0xFFE5293E),
+          seedColor: primaryAppColor,
+          primary: primaryAppColor,
           secondary: const Color(0xFFFFB800),
           surface: Colors.white,
         ),
@@ -31,6 +48,11 @@ class ZakiFoodApp extends StatelessWidget {
 // 📦 قاعدة البيانات المباشرة للتطبيق
 List<Map<String, dynamic>> globalRestaurants = [];
 List<Map<String, String>> globalOrders = [];
+
+// 💳 معلومات بطاقة الماستركارد والحساب المصرفي للمطور
+String masterCardNumber = "5320 **** **** 8890";
+String masterCardHolder = "عبد السلام عباس كريم";
+double appCommissionRate = 0.10; // نسبة ربح التطبيق 10%
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -59,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showWelcomeDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false, // لا يمكن إغلاقها إلا بالضغط على الزر
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -70,18 +92,15 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // أيقونة ترحيبية
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE5293E).withOpacity(0.1),
+                    color: primaryAppColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Text('👋🍔', style: TextStyle(fontSize: 40)),
                 ),
                 const SizedBox(height: 14),
-                
-                // عنوان الترحيب
                 const Text(
                   'أهلاً بك في تطبيق زاكي! ⚡',
                   style: TextStyle(
@@ -98,11 +117,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 18),
-
-                // تعليمات الاستخدام
                 _buildInstructionStep(
                   icon: Icons.search_rounded,
-                  iconColor: const Color(0xFFE5293E),
+                  iconColor: primaryAppColor,
                   title: '1. اختر مطعمك المفضل',
                   desc: 'تصفح قائمة المطاعم المتنوعة واختر وجبتك الشهية بسهولة.',
                 ),
@@ -120,16 +137,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: '3. استلم طلبك بسرعة',
                   desc: 'تابع حالة طلبك مباشرة عبر قائمة "طلباتي".',
                 ),
-
                 const SizedBox(height: 22),
-
-                // زر ابدأ
                 SizedBox(
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE5293E),
+                      backgroundColor: primaryAppColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -156,7 +170,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ودجت مساعد لبناء خطوات التعليمات
   Widget _buildInstructionStep({
     required IconData icon,
     required Color iconColor,
@@ -205,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFFE5293E),
+        backgroundColor: primaryAppColor,
         title: Text(
           _currentIndex == 0
               ? 'Zaki | زاكي ⚡'
@@ -222,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           BottomNavigationBar(
             currentIndex: _currentIndex,
-            selectedItemColor: const Color(0xFFE5293E),
+            selectedItemColor: primaryAppColor,
             unselectedItemColor: Colors.grey.shade500,
             selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             type: BottomNavigationBarType.fixed,
@@ -278,11 +291,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4)),
               ],
             ),
-            child: const TextField(
+            child: TextField(
               decoration: InputDecoration(
-                icon: Icon(Icons.search, color: Color(0xFFE5293E)),
+                icon: Icon(Icons.search, color: primaryAppColor),
                 hintText: 'ابحث عن مطعم أو وجبة مفضلة...',
-                hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
+                hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
                 border: InputBorder.none,
               ),
             ),
@@ -302,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   margin: const EdgeInsets.only(left: 8),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFE5293E) : Colors.white,
+                    color: isSelected ? primaryAppColor : Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: const [
                       BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
@@ -328,7 +341,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Header Label
           const Text(
             'المطاعم المميزة في المحاويل 📍',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E2022)),
@@ -383,8 +395,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           width: 70,
                           height: 70,
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFE5293E), Color(0xFFB71C1C)],
+                            gradient: LinearGradient(
+                              colors: [primaryAppColor, primaryAppColor.withOpacity(0.7)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -427,10 +439,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(rest['type'], style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                               const SizedBox(height: 8),
                               Row(
-                                children: const [
-                                  Icon(Icons.delivery_dining_rounded, color: Color(0xFFE5293E), size: 18),
-                                  SizedBox(width: 4),
-                                  Text('توصيل سريع ⚡', style: TextStyle(color: Color(0xFFE5293E), fontWeight: FontWeight.bold, fontSize: 11)),
+                                children: [
+                                  Icon(Icons.delivery_dining_rounded, color: primaryAppColor, size: 18),
+                                  const SizedBox(width: 4),
+                                  Text('توصيل سريع ⚡', style: TextStyle(color: primaryAppColor, fontWeight: FontWeight.bold, fontSize: 11)),
                                 ],
                               ),
                             ],
@@ -448,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// 🔒 شاشة المطور المحمية برمز دخول وتصميم احترافي
+// 🔒 شاشة المطور المحمية + التحكم بالألوان الأرباح وطلبات اليوم
 class DeveloperAdminScreen extends StatefulWidget {
   final VoidCallback onDataChanged;
   const DeveloperAdminScreen({super.key, required this.onDataChanged});
@@ -465,6 +477,15 @@ class _DeveloperAdminScreenState extends State<DeveloperAdminScreen> {
   final _restNameController = TextEditingController();
   final _restTypeController = TextEditingController();
 
+  final List<Map<String, dynamic>> _themeColors = [
+    {'name': 'الأحمر الكلاسيكي', 'color': const Color(0xFFE5293E)},
+    {'name': 'الأزرق الملكي', 'color': const Color(0xFF1E88E5)},
+    {'name': 'الأخضر الحديث', 'color': const Color(0xFF2E7D32)},
+    {'name': 'البرتقالي الجذاب', 'color': const Color(0xFFE65100)},
+    {'name': 'البنفسجي الفاخر', 'color': const Color(0xFF6A1B9A)},
+    {'name': 'الأسود الداكن', 'color': const Color(0xFF212121)},
+  ];
+
   void _verifyPin() {
     if (_pinController.text == _developerPin) {
       setState(() {
@@ -473,7 +494,7 @@ class _DeveloperAdminScreenState extends State<DeveloperAdminScreen> {
       _pinController.clear();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('الرمز السري غير صحيح! غير مصرح لك بالدخول ❌'), backgroundColor: Colors.red),
+        const SnackBar(content: Text('الرمز السري غير صحيح! غیر مصرح لك بالدخول ❌'), backgroundColor: Colors.red),
       );
     }
   }
@@ -522,7 +543,7 @@ class _DeveloperAdminScreenState extends State<DeveloperAdminScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE5293E)),
+            style: ElevatedButton.styleFrom(backgroundColor: primaryAppColor),
             onPressed: () {
               if (nameController.text.isNotEmpty && priceController.text.isNotEmpty) {
                 setState(() {
@@ -542,6 +563,18 @@ class _DeveloperAdminScreenState extends State<DeveloperAdminScreen> {
     );
   }
 
+  // 📊 حساب إجمالي مبيعات اليوم
+  double _calculateTodayTotalSales() {
+    double total = 0.0;
+    for (var order in globalOrders) {
+      String rawPrice = order['price'] ?? '0';
+      rawPrice = rawPrice.replaceAll(RegExp(r'[^0-9]'), '');
+      double parsed = double.tryParse(rawPrice) ?? 0.0;
+      total += parsed;
+    }
+    return total;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_isAuthenticated) {
@@ -558,13 +591,13 @@ class _DeveloperAdminScreenState extends State<DeveloperAdminScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(color: const Color(0xFFE5293E).withOpacity(0.1), shape: BoxShape.circle),
-                    child: const Icon(Icons.admin_panel_settings_rounded, size: 50, color: Color(0xFFE5293E)),
+                    decoration: BoxDecoration(color: primaryAppColor.withOpacity(0.1), shape: BoxShape.circle),
+                    child: Icon(Icons.admin_panel_settings_rounded, size: 50, color: primaryAppColor),
                   ),
                   const SizedBox(height: 16),
                   const Text('لوحة المطور المحمية 🔒', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  const Text('أدخل رمز الدخول السرّي للوصول إلى التحكم بالمطاعم والمنيو:', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  const Text('أدخل رمز الدخول السرّي للوصول إلى الأرباح وإعدادات الثيم والمنيو:', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 13)),
                   const SizedBox(height: 20),
                   TextField(
                     controller: _pinController,
@@ -582,7 +615,7 @@ class _DeveloperAdminScreenState extends State<DeveloperAdminScreen> {
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE5293E),
+                        backgroundColor: primaryAppColor,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                       onPressed: _verifyPin,
@@ -597,6 +630,9 @@ class _DeveloperAdminScreenState extends State<DeveloperAdminScreen> {
       );
     }
 
+    double todaySales = _calculateTodayTotalSales();
+    double todayEarnings = todaySales * appCommissionRate;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -605,7 +641,7 @@ class _DeveloperAdminScreenState extends State<DeveloperAdminScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('➕ إضافة مطعم جديد', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFE5293E))),
+              const Text('⚙️ إعدادات التحكم والأرباح', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               IconButton(
                 icon: const Icon(Icons.logout_rounded, color: Colors.grey),
                 onPressed: () {
@@ -616,7 +652,144 @@ class _DeveloperAdminScreenState extends State<DeveloperAdminScreen> {
               )
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
+
+          // 📅 1. قسم طلبات المبيعات وأرباح اليوم
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3))],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.today_rounded, color: primaryAppColor, size: 24),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'إحصائيات وطلبات اليوم 📅',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E2022)),
+                    ),
+                  ],
+                ),
+                const Divider(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Column(
+                      children: [
+                        const Text('عدد طلبات اليوم', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        const SizedBox(height: 4),
+                        Text('${globalOrders.length}', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: primaryAppColor)),
+                      ],
+                    ),
+                    Container(height: 35, width: 1, color: Colors.grey.shade300),
+                    Column(
+                      children: [
+                        const Text('مبيعات اليوم', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        const SizedBox(height: 4),
+                        Text('${todaySales.toStringAsFixed(0)} د.ع', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      ],
+                    ),
+                    Container(height: 35, width: 1, color: Colors.grey.shade300),
+                    Column(
+                      children: [
+                        const Text('ربحك الصافي (10%)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        const SizedBox(height: 4),
+                        Text('${todayEarnings.toStringAsFixed(0)} د.ع', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 💳 2. بطاقة الماستركارد
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E2022), Color(0xFF373B3E)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4))],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    Text('MasterCard 💳', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                    Icon(Icons.credit_card_rounded, color: Color(0xFFFFB800), size: 30),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(masterCardNumber, style: const TextStyle(color: Colors.white, fontSize: 20, letterSpacing: 2, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text('صاحب الحساب: $masterCardHolder', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // 🎨 3. تغيير لون وثيم التطبيق
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('🎨 تغيير لون وثيم التطبيق الرئيسي', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 6),
+                  const Text('اختر اللون المناسب للتطبيق لتتغير كل الواجهات فوراً:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 10,
+                    children: _themeColors.map((theme) {
+                      final bool isSelected = primaryAppColor == theme['color'];
+                      return InkWell(
+                        onTap: () {
+                          ZakiFoodApp.of(context).changeThemeColor(theme['color']);
+                          widget.onDataChanged();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('تم تغيير لون التطبيق إلى ${theme['name']}!🎨')),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: theme['color'],
+                            borderRadius: BorderRadius.circular(12),
+                            border: isSelected ? Border.all(color: Colors.amber, width: 3) : null,
+                          ),
+                          child: Text(
+                            theme['name'],
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  )
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // ➕ 4. إضافة المطاعم والتحكم بالمنيو
+          const Text('➕ إضافة مطعم جديد', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
           TextField(controller: _restNameController, decoration: InputDecoration(labelText: 'اسم المطعم', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
           const SizedBox(height: 10),
           TextField(controller: _restTypeController, decoration: InputDecoration(labelText: 'نوع الأكلات', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
@@ -626,7 +799,7 @@ class _DeveloperAdminScreenState extends State<DeveloperAdminScreen> {
             height: 48,
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE5293E),
+                backgroundColor: primaryAppColor,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               icon: const Icon(Icons.add, color: Colors.white),
@@ -654,7 +827,7 @@ class _DeveloperAdminScreenState extends State<DeveloperAdminScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(rest['name'], style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFFE5293E))),
+                          Text(rest['name'], style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: primaryAppColor)),
                           IconButton(
                             icon: const Icon(Icons.delete_outline, color: Colors.red),
                             onPressed: () {
@@ -719,7 +892,7 @@ class MenuDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(restaurant['name']),
-        backgroundColor: const Color(0xFFE5293E),
+        backgroundColor: primaryAppColor,
         foregroundColor: Colors.white,
       ),
       body: menu.isEmpty
@@ -741,10 +914,10 @@ class MenuDetailScreen extends StatelessWidget {
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     title: Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    subtitle: Text(item['price'], style: const TextStyle(color: Color(0xFFE5293E), fontWeight: FontWeight.bold, fontSize: 15)),
+                    subtitle: Text(item['price'], style: TextStyle(color: primaryAppColor, fontWeight: FontWeight.bold, fontSize: 15)),
                     trailing: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE5293E),
+                        backgroundColor: primaryAppColor,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       child: const Text('طلب الآن 🛒', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -854,7 +1027,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('تأكيد الطلب والموقع'),
-        backgroundColor: const Color(0xFFE5293E),
+        backgroundColor: primaryAppColor,
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -864,7 +1037,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Card(
-                color: Colors.red.shade50,
+                color: primaryAppColor.withOpacity(0.1),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 child: Padding(
                   padding: const EdgeInsets.all(14.0),
@@ -872,7 +1045,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(child: Text('${widget.restaurantName} - ${widget.itemName}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
-                      Text(widget.price, style: const TextStyle(color: Color(0xFFE5293E), fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(widget.price, style: TextStyle(color: primaryAppColor, fontWeight: FontWeight.bold, fontSize: 16)),
                     ],
                   ),
                 ),
@@ -897,15 +1070,15 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
-                  side: const BorderSide(color: Color(0xFFE5293E)),
+                  side: BorderSide(color: primaryAppColor),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 icon: _isLocating 
                   ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.my_location_rounded, color: Color(0xFFE5293E)),
+                  : Icon(Icons.my_location_rounded, color: primaryAppColor),
                 label: Text(
                   _isLocating ? 'جاري تحديد الموقع...' : 'تحديد موقعي الجغرافي حالياً 📍',
-                  style: const TextStyle(color: Color(0xFFE5293E), fontWeight: FontWeight.bold),
+                  style: TextStyle(color: primaryAppColor, fontWeight: FontWeight.bold),
                 ),
                 onPressed: _getDeviceLocation,
               ),
@@ -963,11 +1136,11 @@ class OrdersScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(order['restaurant'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFFE5293E))),
+                    Text(order['restaurant'] ?? '', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryAppColor)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.red.shade100, borderRadius: BorderRadius.circular(8)),
-                      child: Text(order['status'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFE5293E))),
+                      decoration: BoxDecoration(color: primaryAppColor.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+                      child: Text(order['status'] ?? '', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: primaryAppColor)),
                     ),
                   ],
                 ),
