@@ -114,7 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(12),
       child: Column(
         children: [
-          // كارت البانر واللوجو الفخم لـ Zaki
           Container(
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(16),
@@ -136,8 +135,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               children: [
                 Container(
-                  width: 75,
-                  height: 75,
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E2129),
                     borderRadius: BorderRadius.circular(16),
@@ -146,27 +145,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.restaurant_menu, color: Colors.amber, size: 36),
+                      Icon(Icons.restaurant_menu, color: Colors.amber, size: 32),
                       Text(
                         'Zaki',
-                        style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 12),
+                        style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 11),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'تطبيق زاكي - Zaki 🍔',
-                        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'أفضل مطاعم قضاء المحاويل بين يديك مباشرة مع التوصيل الدقيق!',
-                        style: TextStyle(color: Colors.white90, fontSize: 13),
+                        'أفضل مطاعم المحاويل بين يديك مباشرة مع التوصيل الدقيق!',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ],
                   ),
@@ -174,18 +173,16 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-
-          // عنوان قائمة المطاعم
           const Align(
             alignment: Alignment.centerRight,
             child: Padding(
               padding: EdgeInsets.only(bottom: 8.0, right: 4),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-              child: Text('اختر المطعم:'),
+              child: Text(
+                'اختر المطعم:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+              ),
             ),
           ),
-
-          // عرض كروت المطاعم
           ...restaurants.map((rest) {
             return Card(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -388,7 +385,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                 decoration: const InputDecoration(labelText: 'العنوان / نقطة دالة قريب عليك', border: OutlineInputBorder()),
               ),
               const SizedBox(height: 12),
-              
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
@@ -408,7 +404,6 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
                 _locationLink,
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade700, fontStyle: FontStyle.italic),
               ),
-              
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
