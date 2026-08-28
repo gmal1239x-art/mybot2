@@ -11,7 +11,7 @@ class ZHJApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'ZHJ - المحاويل',
+      title: 'ZHJ',
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFF0A0A0A),
         fontFamily: 'Cairo',
@@ -131,9 +131,8 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(14.0),
         child: Column(
-          crossAxisAlignment: CrossAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start, // التصحيح تم هنا
           children: [
-            // أزرار الأقسام التفاعلية
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -252,6 +251,7 @@ class _MealMenuScreenState extends State<MealMenuScreen> {
         title: Text(widget.restaurantName, style: const TextStyle(color: Color(0xFFD4AF37))),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, // التصحيح تم هنا
         children: [
           Expanded(
             child: ListView.builder(
@@ -274,7 +274,6 @@ class _MealMenuScreenState extends State<MealMenuScreen> {
               },
             ),
           ),
-          // شريط العداد والسلة في الأسفل
           if (itemCount > 0)
             Container(
               padding: const EdgeInsets.all(16),
@@ -291,9 +290,7 @@ class _MealMenuScreenState extends State<MealMenuScreen> {
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37), foregroundColor: Colors.black),
-                    onPressed: () {
-                      // الانتقال لإتمام الطلب
-                    },
+                    onPressed: () {},
                     child: const Text('تأكيد الطلب 🛒'),
                   ),
                 ],
