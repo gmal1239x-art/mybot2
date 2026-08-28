@@ -31,7 +31,6 @@ class WaselApp extends StatelessWidget {
   }
 }
 
-// نموذج البيانات باستخدام Dart 3 Records كبديل حديث وخفيف
 typedef Restaurant = ({
   String name,
   String category,
@@ -41,7 +40,6 @@ typedef Restaurant = ({
   String imageEmoji,
 });
 
-// القائمة العامة للمطاعم
 final List<Restaurant> globalRestaurants = [
   (
     name: 'مطعم الملكي للمأكولات',
@@ -61,7 +59,6 @@ final List<Restaurant> globalRestaurants = [
   ),
 ];
 
-// 1. شاشة تسجيل الدخول
 class PhoneAuthScreen extends StatefulWidget {
   const PhoneAuthScreen({super.key});
 
@@ -85,7 +82,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
     final status = await Permission.location.request();
     if (status.isGranted) {
       await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
       );
     }
     if (!mounted) return;
@@ -204,7 +201,6 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   }
 }
 
-// 2. الشاشة الرئيسية
 class MainHomeScreen extends StatefulWidget {
   const MainHomeScreen({super.key});
 
@@ -317,8 +313,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
           ),
           const Center(child: Text('الطلبات 📦', style: TextStyle(color: Colors.grey))),
           const Center(child: Text('السلة 🛒', style: TextStyle(color: Colors.grey))),
-          
-          // شاشة حسابي + إعدادات المطور
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -355,7 +349,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) => setState(() => _selectedIndex = index),
         backgroundColor: const Color(0xFF1E1E1E),
-        indicatorColor: const Color(0xFFFF6B00).withAlpha(50),
+        indicatorColor: const Color(0xFFFF6B00).withOpacity(0.2),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.explore), label: 'الرئيسية'),
           NavigationDestination(icon: Icon(Icons.receipt_long), label: 'طلباتي'),
@@ -410,7 +404,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
   }
 }
 
-// 3. لوحة تحكم المطور المشفرة (رمز 1973)
 class DevDashboardScreen extends StatefulWidget {
   const DevDashboardScreen({super.key});
 
@@ -494,4 +487,3 @@ class _DevDashboardScreenState extends State<DevDashboardScreen> {
     );
   }
 }
-
