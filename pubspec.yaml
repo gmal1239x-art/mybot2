@@ -1,5 +1,5 @@
-name: zaki_app
-description: "تطبيق زكي لطلب الطعام"
+name: wasel_app
+description: "تطبيق واصل - المحاويل لطلب الطعام"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -11,7 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.6
-  google_generative_ai: ^0.2.2
+  permission_handler: ^11.3.1
+  geolocator: ^13.0.1
 
 dev_dependencies:
   flutter_test:
@@ -20,5 +21,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - 1787867227828.jpg
