@@ -131,7 +131,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(14.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // التصحيح تم هنا
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -222,7 +222,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
   }
 }
 
-// 3. شاشة الوجبات مع العدادات والحسابات
+// 3. شاشة الوجبات
 class MealMenuScreen extends StatefulWidget {
   final String restaurantName;
   const MealMenuScreen({Key? key, required this.restaurantName}) : super(key: key);
@@ -251,7 +251,7 @@ class _MealMenuScreenState extends State<MealMenuScreen> {
         title: Text(widget.restaurantName, style: const TextStyle(color: Color(0xFFD4AF37))),
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // التصحيح تم هنا
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: ListView.builder(
@@ -282,7 +282,7 @@ class _MealMenuScreenState extends State<MealMenuScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
-                    crossAxisAlignment: CrossAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('عدد الوجبات: $itemCount', style: const TextStyle(color: Colors.grey)),
                       Text('المجموع: $totalPrice د.ع', style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold)),
