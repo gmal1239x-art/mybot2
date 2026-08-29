@@ -46,7 +46,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
   final ImagePicker _picker = ImagePicker();
 
-  // مفتاح الـ API
   final String _apiKey = "AQ.Ab8RN6LU56sOXOPLyFjcUr2kpBZ_9h4qlwF925ybwW_GP-rx1g";
 
   Future<void> _pickImage() async {
