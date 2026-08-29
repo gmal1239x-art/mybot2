@@ -1,4 +1,4 @@
-import 'dart00:json';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -46,7 +46,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
   final ImagePicker _picker = ImagePicker();
 
-  // المفتاح المنسوخ جاهز ومربوط هنا
+  // المفتاح الخاص بك والمستخرج من Google AI Studio
   final String _apiKey = "AQ.Ab8RN6Ity9HQfa47bd0r6Jf5fyAm_akv7oZtuajLetzZFB3FfA";
 
   Future<void> _pickImage() async {
