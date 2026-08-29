@@ -62,7 +62,7 @@ class _GoldHomeScreenState extends State<GoldHomeScreen> {
       final base64Image = base64Encode(bytes);
 
       // استبدل هذا السطر بمفتاح الـ API الخاص بك من Google AI Studio
-      const apiKey = 'AQ.Ab8RN6KOupu7R9vKfLgomfU0RJhDMeZRYM1dXlZ_OEgpRmhomQ';
+      const apiKey = 'AQ.Ab8RN6L5XJ2U_Fr2NklKM4FXIZGdEsT0Bi_84y_AB3ZsPDvWIA';
       const url =
           'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey';
 
