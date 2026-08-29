@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart00:json';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -46,8 +46,8 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
   final ImagePicker _picker = ImagePicker();
 
-  // أدخل مفتاح Gemini API الخاص بك هنا بين التنصيصين (يبدأ بـ AIzaSy)
-  final String _apiKey = "AIzaSyYOUR_ACTUAL_GEMINI_API_KEY_HERE";
+  // المفتاح المنسوخ جاهز ومربوط هنا
+  final String _apiKey = "AQ.Ab8RN6Ity9HQfa47bd0r6Jf5fyAm_akv7oZtuajLetzZFB3FfA";
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -105,7 +105,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
         });
       } else {
         setState(() {
-          _analysisResult = "حدث خطأ في الاتصال (رمز الخطأ: ${response.statusCode})\nيرجى التحقق من مفتاح API أو الاتصال بالشبكة.";
+          _analysisResult = "حدث خطأ في الاتصال (رمز الخطأ: ${response.statusCode})\nيرجى التحقق من المفتاح أو الاتصال بالشبكة.";
         });
       }
     } catch (e) {
