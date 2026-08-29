@@ -46,7 +46,8 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
   final ImagePicker _picker = ImagePicker();
 
-  final String _apiKey = "AQ.Ab8RN6LU56sOXOPLyFjcUr2kpBZ_9h4qlwF925ybwW_GP-rx1g";
+  // أدخل مفتاح Gemini API الخاص بك هنا بين التنصيصين (يبدأ بـ AIzaSy)
+  final String _apiKey = "AIzaSyYOUR_ACTUAL_GEMINI_API_KEY_HERE";
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -104,7 +105,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
         });
       } else {
         setState(() {
-          _analysisResult = "حدث خطأ في الاتصال (رمز الخطأ: ${response.statusCode})\nيرجى التحقق من المفتاح أو الاتصال بالشبكة.";
+          _analysisResult = "حدث خطأ في الاتصال (رمز الخطأ: ${response.statusCode})\nيرجى التحقق من مفتاح API أو الاتصال بالشبكة.";
         });
       }
     } catch (e) {
