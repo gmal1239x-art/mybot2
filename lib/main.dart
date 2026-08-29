@@ -5,35 +5,39 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
-  runApp(const GoldAnalysisApp());
+  runApp(const ChartAnalysisApp());
 }
 
-class GoldAnalysisApp extends StatelessWidget {
-  const GoldAnalysisApp({super.key});
+class ChartAnalysisApp extends StatelessWidget {
+  const ChartAnalysisApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'محلل الذهب الذكي',
+      title: 'تحليل الشارت',
       theme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.amber,
-        scaffoldBackgroundColor: const Color(0xFF121212),
+        scaffoldBackgroundColor: const Color(0xFF0F172A), // خلفية كحلي داكن احترافية
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFF59E0B),
+          secondary: Color(0xFF10B981),
+          surface: Color(0xFF1E293B),
+        ),
       ),
-      home: const GoldHomeScreen(),
+      home: const MainHomeScreen(),
     );
   }
 }
 
-class GoldHomeScreen extends StatefulWidget {
-  const GoldHomeScreen({super.key});
+class MainHomeScreen extends StatefulWidget {
+  const MainHomeScreen({super.key});
 
   @override
-  State<GoldHomeScreen> createState() => _GoldHomeScreenState();
+  State<MainHomeScreen> createState() => _MainHomeScreenState();
 }
 
-class _GoldHomeScreenState extends State<GoldHomeScreen> {
+class _MainHomeScreenState extends State<MainHomeScreen> {
   File? _selectedImage;
   bool _isLoading = false;
   Map<String, dynamic>? _analysisResult;
@@ -61,10 +65,8 @@ class _GoldHomeScreenState extends State<GoldHomeScreen> {
       final bytes = await _selectedImage!.readAsBytes();
       final base64Image = base64Encode(bytes);
 
-      // استبدل هذا السطر بمفتاح الـ API الخاص بك من Google AI Studio
-      const apiKey = 'AQ.Ab8RN6L5XJ2U_Fr2NklKM4FXIZGdEsT0Bi_84y_AB3ZsPDvWIA';
-      const url =
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey';
+      const apiKey = 'AQ.Ab8RN6LGfwZzaZWZTXikto-QQH2oxW4yJVoL6a2tgrTmzREt1Q'; 
+      const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey';
 
       final response = await http.post(
         Uri.parse(url),
@@ -74,9 +76,7 @@ class _GoldHomeScreenState extends State<GoldHomeScreen> {
             {
               "parts": [
                 {
-                  "text": '''Analyze this XAU/USD chart strictly using Price Action logic.
-Return ONLY valid JSON with structure:
-{"trend": "Bullish/Bearish/Sideways", "pattern_detected": "", "key_levels": {"support": "", "resistance": ""}, "trade_scenario": {"action": "BUY/SELL/WAIT", "entry_price": "", "take_profit_1": "", "take_profit_2": "", "stop_loss": ""}, "brief_summary": "شرح مختصر باللغة العربية"}.'''
+                  "text": "Analyze this chart strictly using Price Action logic. Return ONLY valid JSON with structure: {\"trend\": \"Bullish/Bearish/Sideways\", \"pattern_detected\": \"\", \"key_levels\": {\"support\": \"\", \"resistance\": \"\"}, \"trade_setup\": {\"signal\": \"BUY/SELL/WAIT\", \"confidence_percentage\": \"85%\", \"entry\": \"\", \"stop_loss\": \"\", \"take_profit\": \"\"}, \"analysis_summary\": \"ARABIC SUMMARY\"}"
                 },
                 {
                   "inline_data": {
@@ -92,17 +92,20 @@ Return ONLY valid JSON with structure:
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final String rawText = data['candidates'][0]['content']['parts'][0]['text'];
-        final cleanJson = rawText.replaceAll('```json', '').replaceAll('```', '').trim();
-
+        final String textResult = data['candidates'][0]['content']['parts'][0]['text'];
+        final cleanJson = textResult.replaceAll('```json', '').replaceAll('```', '').trim();
         setState(() {
           _analysisResult = jsonDecode(cleanJson);
         });
       } else {
-        _showError('حدث خطأ أثناء معالجة الصورة، تأكد من مفتاح الـ API.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ من الـ API: ${response.statusCode}')),
+        );
       }
     } catch (e) {
-      _showError('خطأ في الاتصال: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('حدث خطأ أثناء معالجة الصورة: $e')),
+      );
     } finally {
       setState(() {
         _isLoading = false;
@@ -110,135 +113,243 @@ Return ONLY valid JSON with structure:
     }
   }
 
-  void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  Color _getSignalColor(String? signal) {
+    if (signal == 'BUY') return const Color(0xFF10B981); // أخضر زمردي
+    if (signal == 'SELL') return const Color(0xFFEF4444); // أحمر ناري
+    return const Color(0xFFF59E0B); // أصفر ذهبي
+  }
+
+  IconData _getSignalIcon(String? signal) {
+    if (signal == 'BUY') return Icons.trending_up_rounded;
+    if (signal == 'SELL') return Icons.trending_down_rounded;
+    return Icons.remove_circle_outline_rounded;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('محلل الذهب والشركات الذكي'),
+        title: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.auto_graph_rounded, color: Color(0xFFF59E0B)),
+            SizedBox(width: 8),
+            Text('تحليل الشارت', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
         centerTitle: true,
-        backgroundColor: Colors.amber.shade700,
+        backgroundColor: const Color(0xFF1E293B),
+        elevation: 4,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // رفع الصورة / واجهة الشارت المتكاملة
             GestureDetector(
               onTap: _pickImage,
               child: Container(
-                height: 200,
+                height: 240,
+                width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade900,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.amber.shade700, width: 1.5),
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF334155), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    )
+                  ],
                 ),
                 child: _selectedImage != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(18),
                         child: Image.file(_selectedImage!, fit: BoxFit.cover),
                       )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.add_photo_alternate, size: 50, color: Colors.amber),
-                          SizedBox(height: 10),
-                          Text('اضغط هنا لاختيار صورة الشارت من الاستوديو'),
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+                            ),
+                            child: const Icon(Icons.add_photo_alternate_rounded, size: 48, color: Color(0xFFF59E0B)),
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'إدراج صورة الشارت للتحليل',
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'يدعم منصات TradingView و MT4 و MT5',
+                            style: TextStyle(color: Colors.white54, fontSize: 12),
+                          ),
                         ],
                       ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+
+            // زر التحليل الرئيسي
             ElevatedButton(
-              onPressed: _isLoading || _selectedImage == null ? null : _analyzeChart,
+              onPressed: _isLoading ? null : _analyzeChart,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber.shade700,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: const Color(0xFFF59E0B),
+                minimumSize: const Size(double.infinity, 54),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 5,
               ),
               child: _isLoading
                   ? const CircularProgressIndicator(color: Colors.black)
-                  : const Text('تحليل الشارت الآن', style: TextStyle(fontSize: 18, color: Colors.black)),
+                  : const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.psychology_rounded, color: Colors.black),
+                        SizedBox(width: 8),
+                        Text(
+                          'تحليل الشارت بواسطة AI',
+                          style: TextStyle(fontSize: 18, color: Colors.black, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
             ),
-            const SizedBox(height: 20),
-            if (_analysisResult != null) _buildResultCard(),
-          ],
-        ),
-      ),
-    );
-  }
+            const SizedBox(height: 24),
 
-  Widget _buildResultCard() {
-    final scenario = _analysisResult!['trade_scenario'];
-    final levels = _analysisResult!['key_levels'];
-    final isBuy = scenario['action'] == 'BUY';
+            // كارت النتائج الذكية
+            if (_analysisResult != null) ...[
+              Card(
+                color: const Color(0xFF1E293B),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: Border.all(color: _getSignalColor(_analysisResult!['trade_setup']?['signal']), width: 1.5),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAlignment.start,
+                    children: [
+                      // القرار والنسبة المئوية
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                _getSignalIcon(_analysisResult!['trade_setup']?['signal']),
+                                color: _getSignalColor(_analysisResult!['trade_setup']?['signal']),
+                                size: 30,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'القرار: ${_analysisResult!['trade_setup']?['signal'] ?? 'WAIT'}',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: _getSignalColor(_analysisResult!['trade_setup']?['signal']),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFF59E0B)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.verified_rounded, size: 16, color: Color(0xFFF59E0B)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'الدقة: ${_analysisResult!['trade_setup']?['confidence_percentage'] ?? 'N/A'}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(color: Color(0xFF334155), height: 30),
 
-    return Card(
-      color: Colors.grey.shade900,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'التوصية: ${scenario['action']}',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: isBuy ? Colors.green : Colors.red,
+                      // البيانات الفنية
+                      _buildInfoRow(Icons.show_chart_rounded, 'الاتجاه العام', _analysisResult!['trend'] ?? ''),
+                      _buildInfoRow(Icons.candlestick_chart_rounded, 'النموذج الفني', _analysisResult!['pattern_detected'] ?? ''),
+                      _buildInfoRow(
+                        Icons.layers_rounded,
+                        'الدعم والمقاومة',
+                        'دعم: ${_analysisResult!['key_levels']?['support']} | مقاومة: ${_analysisResult!['key_levels']?['resistance']}',
+                      ),
+
+                      const SizedBox(height: 12),
+                      const Divider(color: Color(0xFF334155)),
+                      const SizedBox(height: 12),
+
+                      // تفاصيل الصفقة (TP / SL / Entry)
+                      _buildInfoRow(Icons.login_rounded, 'سعر الدخول', _analysisResult!['trade_setup']?['entry'] ?? ''),
+                      _buildInfoRow(
+                        Icons.shield_rounded,
+                        'وقف الخسارة (SL)',
+                        _analysisResult!['trade_setup']?['stop_loss'] ?? '',
+                        textColor: const Color(0xFFEF4444),
+                      ),
+                      _buildInfoRow(
+                        Icons.ads_click_rounded,
+                        'جني الأرباح (TP)',
+                        _analysisResult!['trade_setup']?['take_profit'] ?? '',
+                        textColor: const Color(0xFF10B981),
+                      ),
+
+                      const Divider(color: Color(0xFF334155), height: 30),
+
+                      // الملخص
+                      Row(
+                        children: const [
+                          Icon(Icons.description_rounded, color: Color(0xFFF59E0B), size: 20),
+                          SizedBox(width: 8),
+                          Text('رأي الذكاء الاصطناعي:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _analysisResult!['analysis_summary'] ?? '',
+                        style: const TextStyle(color: Colors.white70, height: 1.4),
+                      ),
+                    ],
                   ),
                 ),
-                Chip(
-                  label: Text(_analysisResult!['trend'] ?? ''),
-                  backgroundColor: Colors.amber.shade900,
-                ),
-              ],
-            ),
-            const Divider(color: Colors.grey),
-            Text('النمط المكتشف: ${_analysisResult!['pattern_detected']}'),
-            const SizedBox(height: 8),
-            Text('الملخص: ${_analysisResult!['brief_summary']}'),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.black26,
-                borderRadius: BorderRadius.circular(8),
               ),
-              child: Column(
-                children: [
-                  _priceRow('نقطة الدخول:', scenario['entry_price']),
-                  _priceRow('الهدف الأول (TP1):', scenario['take_profit_1']),
-                  _priceRow('الهدف الثاني (TP2):', scenario['take_profit_2']),
-                  _priceRow('وقف الخسارة (SL):', scenario['stop_loss']),
-                  const Divider(color: Colors.grey),
-                  _priceRow('الدعم:', levels['support']),
-                  _priceRow('المقاومة:', levels['resistance']),
-                ],
-              ),
-            ),
+            ]
           ],
         ),
       ),
     );
   }
 
-  Widget _priceRow(String title, dynamic value) {
+  Widget _buildInfoRow(IconData icon, String title, String value, {Color textColor = Colors.white}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(color: Colors.grey)),
-          Text(value?.toString() ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
+          Icon(icon, size: 18, color: Colors.white54),
+          const SizedBox(width: 8),
+          Text('$title: ', style: const TextStyle(color: Colors.white70)),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );
   }
 }
+
