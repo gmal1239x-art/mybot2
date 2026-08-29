@@ -1,7 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.mybot2">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
-        android:label="زكيZH"
+        android:label="محلل الذهب الذكي"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
