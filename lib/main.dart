@@ -46,7 +46,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
   final ImagePicker _picker = ImagePicker();
 
-  // مفتاح الـ API الخاص بك
+  // مفتاح الـ API
   final String _apiKey = "AQ.Ab8RN6LU56sOXOPLyFjcUr2kpBZ_9h4qlwF925ybwW_GP-rx1g";
 
   Future<void> _pickImage() async {
@@ -70,7 +70,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
       List<int> imageBytes = await _selectedImage!.readAsBytes();
       String base64Image = base64Encode(imageBytes);
 
-      // الرابط الصحيح والمحدث لموديل gemini-1.5-flash
       final Uri url = Uri.parse(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$_apiKey",
       );
@@ -107,6 +106,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
       } else {
         setState(() {
           _analysisResult = "حدث خطأ في الاتصال (رمز الخطأ: ${response.statusCode})\nيرجى التحقق من المفتاح أو الاتصال بالشبكة.";
+        });
       }
     } catch (e) {
       setState(() {
@@ -129,7 +129,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             GestureDetector(
               onTap: _pickImage,
@@ -195,3 +195,4 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
     );
   }
 }
+
