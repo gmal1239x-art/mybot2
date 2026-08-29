@@ -227,12 +227,12 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                 color: const Color(0xFF1E293B),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
-                  side: Border.all(color: _getSignalColor(_analysisResult!['trade_setup']?['signal']), width: 1.5),
+                  side: BorderSide(color: _getSignalColor(_analysisResult!['trade_setup']?['signal']), width: 1.5),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
-                    crossAxisAlignment: CrossAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // القرار والنسبة المئوية
                       Row(
