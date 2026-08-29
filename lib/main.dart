@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const ChartAnalysisApp());
@@ -113,6 +115,36 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
     }
   }
 
+  // دالة فتح تطبيق MetaTrader 5 على الموبايل
+  Future<void> _openMT5App() async {
+    final Uri url = Uri.parse('metatrader5://');
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تطبيق MetaTrader 5 غير مثبت على هذا الجهاز.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('يرجى فتح تطبيق MT5 يدويًا.')),
+      );
+    }
+  }
+
+  // دالة نسخ تفاصيل الصفقة
+  void _copyTradeDetails() {
+    if (_analysisResult == null) return;
+    final setup = _analysisResult!['trade_setup'];
+    final textToCopy = "إشارة: ${setup['signal']}\nالدخول: ${setup['entry']}\nالهدف (TP): ${setup['take_profit']}\nالوقف (SL): ${setup['stop_loss']}";
+    
+    Clipboard.setData(ClipboardData(text: textToCopy));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('تم نسخ تفاصيل الصفقة إلى الحافظة!')),
+    );
+  }
+
   Color _getSignalColor(String? signal) {
     if (signal == 'BUY') return const Color(0xFF10B981);
     if (signal == 'SELL') return const Color(0xFFEF4444);
@@ -127,6 +159,8 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final signal = _analysisResult?['trade_setup']?['signal'];
+
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -194,6 +228,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
               ),
             ),
             const SizedBox(height: 20),
+
             ElevatedButton(
               onPressed: _isLoading ? null : _analyzeChart,
               style: ElevatedButton.styleFrom(
@@ -217,35 +252,32 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                     ),
             ),
             const SizedBox(height: 24),
+
             if (_analysisResult != null) ...[
               Card(
                 color: const Color(0xFF1E293B),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: _getSignalColor(_analysisResult!['trade_setup']?['signal']), width: 1.5),
+                  side: BorderSide(color: _getSignalColor(signal), width: 1.5),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAlignment.start,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
-                              Icon(
-                                _getSignalIcon(_analysisResult!['trade_setup']?['signal']),
-                                color: _getSignalColor(_analysisResult!['trade_setup']?['signal']),
-                                size: 30,
-                              ),
+                              Icon(_getSignalIcon(signal), color: _getSignalColor(signal), size: 30),
                               const SizedBox(width: 8),
                               Text(
-                                'القرار: ${_analysisResult!['trade_setup']?['signal'] ?? 'WAIT'}',
+                                'القرار: ${signal ?? 'WAIT'}',
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
-                                  color: _getSignalColor(_analysisResult!['trade_setup']?['signal']),
+                                  color: _getSignalColor(signal),
                                 ),
                               ),
                             ],
@@ -307,6 +339,38 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                         _analysisResult!['analysis_summary'] ?? '',
                         style: const TextStyle(color: Colors.white70, height: 1.4),
                       ),
+                      if (signal == 'BUY' || signal == 'SELL') ...[
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _copyTradeDetails,
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Color(0xFFF59E0B)),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                icon: const Icon(Icons.copy_rounded, color: Color(0xFFF59E0B)),
+                                label: const Text('نسخ البيانات', style: TextStyle(color: Colors.white)),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _openMT5App,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _getSignalColor(signal),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                icon: const Icon(Icons.launch_rounded, color: Colors.white),
+                                label: const Text('فتح MT5', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
