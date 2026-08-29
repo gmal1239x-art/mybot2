@@ -125,7 +125,7 @@ Return ONLY valid JSON with structure:
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             GestureDetector(
               onTap: _pickImage,
