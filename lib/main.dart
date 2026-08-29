@@ -1,488 +1,243 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
-  runApp(const WaselApp());
+  runApp(const GoldAnalysisApp());
 }
 
-class WaselApp extends StatelessWidget {
-  const WaselApp({super.key});
+class GoldAnalysisApp extends StatelessWidget {
+  const GoldAnalysisApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'واصل - المحاويل',
+      title: 'محلل الذهب الذكي',
       theme: ThemeData(
-        useMaterial3: true,
         brightness: Brightness.dark,
+        primarySwatch: Colors.amber,
         scaffoldBackgroundColor: const Color(0xFF121212),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFF6B00),
-          brightness: Brightness.dark,
-          primary: const Color(0xFFFF6B00),
-          surface: const Color(0xFF1E1E1E),
-        ),
-        fontFamily: 'Cairo',
       ),
-      home: const PhoneAuthScreen(),
+      home: const GoldHomeScreen(),
     );
   }
 }
 
-typedef Restaurant = ({
-  String name,
-  String category,
-  String rating,
-  String deliveryTime,
-  String deliveryFee,
-  String imageEmoji,
-});
-
-final List<Restaurant> globalRestaurants = [
-  (
-    name: 'مطعم الملكي للمأكولات',
-    category: 'مطاعم',
-    rating: '4.9',
-    deliveryTime: '25-35 دقيقة',
-    deliveryFee: '2,000 د.ع',
-    imageEmoji: '👑',
-  ),
-  (
-    name: 'بيتزا ومعجنات المحاويل',
-    category: 'بيتزا',
-    rating: '4.8',
-    deliveryTime: '20-30 دقيقة',
-    deliveryFee: '1,500 د.ع',
-    imageEmoji: '🍕',
-  ),
-];
-
-class PhoneAuthScreen extends StatefulWidget {
-  const PhoneAuthScreen({super.key});
+class GoldHomeScreen extends StatefulWidget {
+  const GoldHomeScreen({super.key});
 
   @override
-  State<PhoneAuthScreen> createState() => _PhoneAuthScreenState();
+  State<GoldHomeScreen> createState() => _GoldHomeScreenState();
 }
 
-class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _otpController = TextEditingController();
-  bool _isCodeSent = false;
+class _GoldHomeScreenState extends State<GoldHomeScreen> {
+  File? _selectedImage;
+  bool _isLoading = false;
+  Map<String, dynamic>? _analysisResult;
 
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    _otpController.dispose();
-    super.dispose();
-  }
+  final ImagePicker _picker = ImagePicker();
 
-  Future<void> _requestLocationPermission() async {
-    final status = await Permission.location.request();
-    if (status.isGranted) {
-      await Geolocator.getCurrentPosition(
-        locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
-      );
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+        _analysisResult = null;
+      });
     }
-    if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const MainHomeScreen()),
-    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Center(child: Text('🛵', style: TextStyle(fontSize: 70))),
-              const SizedBox(height: 20),
-              Text(
-                'مرحباً بك في واصل',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _isCodeSent
-                    ? 'أدخل رمز التحقق المكون من 4 أرقام'
-                    : 'أدخل رقم هاتفك لتسجيل الدخول والبدء بالطلب',
-                style: const TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-              const SizedBox(height: 30),
-              if (!_isCodeSent) ...[
-                TextField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: 'رقم الهاتف',
-                    prefixText: '+964 ',
-                    prefixStyle: const TextStyle(
-                      color: Color(0xFFFF6B00),
-                      fontWeight: FontWeight.bold,
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xFF1E1E1E),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF6B00),
-                    ),
-                    onPressed: () {
-                      if (_phoneController.text.length >= 10) {
-                        setState(() => _isCodeSent = true);
-                      }
-                    },
-                    child: const Text(
-                      'إرسال رمز التحقق',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ] else ...[
-                TextField(
-                  controller: _otpController,
-                  keyboardType: TextInputType.number,
-                  maxLength: 4,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    letterSpacing: 8,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: '• • • •',
-                    filled: true,
-                    fillColor: const Color(0xFF1E1E1E),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF6B00),
-                    ),
-                    onPressed: _requestLocationPermission,
-                    child: const Text(
-                      'تأكيد والدخول 🚀',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+  Future<void> _analyzeChart() async {
+    if (_selectedImage == null) return;
 
-class MainHomeScreen extends StatefulWidget {
-  const MainHomeScreen({super.key});
+    setState(() {
+      _isLoading = true;
+    });
 
-  @override
-  State<MainHomeScreen> createState() => _MainHomeScreenState();
-}
+    try {
+      final bytes = await _selectedImage!.readAsBytes();
+      final base64Image = base64Encode(bytes);
 
-class _MainHomeScreenState extends State<MainHomeScreen> {
-  int _selectedIndex = 0;
-  String _selectedCategory = 'الكل';
+      // استبدل هذا السطر بمفتاح الـ API الخاص بك من Google AI Studio
+      const apiKey = 'YOUR_GEMINI_API_KEY';
+      const url =
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey';
 
-  void _showDevPasswordDialog() {
-    final passController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: const Row(
-          children: [
-            Icon(Icons.lock, color: Color(0xFFFF6B00)),
-            SizedBox(width: 8),
-            Text('لوحة المطور التشفيرية', style: TextStyle(fontSize: 16)),
-          ],
-        ),
-        content: TextField(
-          controller: passController,
-          obscureText: true,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            hintText: 'أدخل رمز السر (1973)',
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFFFF6B00)),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('إلغاء', style: TextStyle(color: Colors.grey)),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFFF6B00),
-            ),
-            onPressed: () {
-              if (passController.text == '1973') {
-                Navigator.pop(ctx);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const DevDashboardScreen()),
-                ).then((_) => setState(() {}));
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('رمز السر غير صحيح ❌'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            child: const Text('دخول'),
-          ),
-        ],
-      ),
-    );
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": '''Analyze this XAU/USD chart strictly using Price Action logic.
+Return ONLY valid JSON with structure:
+{"trend": "Bullish/Bearish/Sideways", "pattern_detected": "", "key_levels": {"support": "", "resistance": ""}, "trade_scenario": {"action": "BUY/SELL/WAIT", "entry_price": "", "take_profit_1": "", "take_profit_2": "", "stop_loss": ""}, "brief_summary": "شرح مختصر باللغة العربية"}.'''
+                },
+                {
+                  "inline_data": {
+                    "mime_type": "image/jpeg",
+                    "data": base64Image
+                  }
+                }
+              ]
+            }
+          ]
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String rawText = data['candidates'][0]['content']['parts'][0]['text'];
+        final cleanJson = rawText.replaceAll('```json', '').replaceAll('```', '').trim();
+
+        setState(() {
+          _analysisResult = jsonDecode(cleanJson);
+        });
+      } else {
+        _showError('حدث خطأ أثناء معالجة الصورة، تأكد من مفتاح الـ API.');
+      }
+    } catch (e) {
+      _showError('خطأ في الاتصال: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final filteredRestaurants = switch (_selectedCategory) {
-      'الكل' => globalRestaurants,
-      _ => globalRestaurants.where((r) => r.category == _selectedCategory).toList(),
-    };
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1E1E),
-        elevation: 0,
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('واصل • موقعك الحالي', style: TextStyle(fontSize: 11, color: Colors.grey)),
-            Text('المحاويل 📍', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
-          ],
-        ),
-      ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          ListView(
-            padding: const EdgeInsets.all(14),
-            children: [
-              const SizedBox(height: 10),
-              const Text('الأقسام', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
-              const SizedBox(height: 10),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildFilterChip('الكل', '🍽️'),
-                    _buildFilterChip('مطاعم', '🍔'),
-                    _buildFilterChip('بيتزا', '🍕'),
-                    _buildFilterChip('كافيهات', '☕'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              ...filteredRestaurants.map(_buildRestaurantCard),
-            ],
-          ),
-          const Center(child: Text('الطلبات 📦', style: TextStyle(color: Colors.grey))),
-          const Center(child: Text('السلة 🛒', style: TextStyle(color: Colors.grey))),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.person, size: 80, color: Color(0xFFFF6B00)),
-                const SizedBox(height: 10),
-                const Text('الحساب الشخصي', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 30),
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    side: const BorderSide(color: Color(0xFFFF6B00)),
-                  ),
-                  onPressed: _showDevPasswordDialog,
-                  icon: const Icon(Icons.code, color: Color(0xFFFF6B00)),
-                  label: const Text('إعدادات المطور ⚙️', style: TextStyle(color: Colors.white)),
-                ),
-                const SizedBox(height: 40),
-                const Text(
-                  'DEV: JMALALHSNAWE',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey,
-                    letterSpacing: 2,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) => setState(() => _selectedIndex = index),
-        backgroundColor: const Color(0xFF1E1E1E),
-        indicatorColor: const Color(0xFFFF6B00).withOpacity(0.2),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.explore), label: 'الرئيسية'),
-          NavigationDestination(icon: Icon(Icons.receipt_long), label: 'طلباتي'),
-          NavigationDestination(icon: Icon(Icons.shopping_cart), label: 'السلة'),
-          NavigationDestination(icon: Icon(Icons.person), label: 'حسابي'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, String emoji) {
-    final isSelected = _selectedCategory == label;
-    return Padding(
-      padding: const EdgeInsets.only(left: 8.0),
-      child: FilterChip(
-        selected: isSelected,
-        label: Text('$emoji $label'),
-        selectedColor: const Color(0xFFFF6B00),
-        backgroundColor: const Color(0xFF2A2A2A),
-        onSelected: (_) => setState(() => _selectedCategory = label),
-      ),
-    );
-  }
-
-  Widget _buildRestaurantCard(Restaurant restaurant) {
-    return Card(
-      color: const Color(0xFF1E1E1E),
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Text(restaurant.imageEmoji, style: const TextStyle(fontSize: 35)),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  restaurant.name,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                Text(
-                  'التصنيف: ${restaurant.category} • التوصيل: ${restaurant.deliveryFee}',
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class DevDashboardScreen extends StatefulWidget {
-  const DevDashboardScreen({super.key});
-
-  @override
-  State<DevDashboardScreen> createState() => _DevDashboardScreenState();
-}
-
-class _DevDashboardScreenState extends State<DevDashboardScreen> {
-  final nameCtrl = TextEditingController();
-  final categoryCtrl = TextEditingController(text: 'مطاعم');
-  final feeCtrl = TextEditingController(text: '2,000 د.ع');
-  final emojiCtrl = TextEditingController(text: '🍔');
-
-  @override
-  void dispose() {
-    nameCtrl.dispose();
-    categoryCtrl.dispose();
-    feeCtrl.dispose();
-    emojiCtrl.dispose();
-    super.dispose();
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: const Text('لوحة المطور - إضافة مطعم'),
+        title: const Text('محلل الذهب والشركات الذكي'),
+        centerTitle: true,
+        backgroundColor: Colors.amber.shade700,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'إضافة مطعم جديد للقائمة:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFF6B00)),
-              ),
-              const SizedBox(height: 15),
-              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'اسم المطعم', filled: true, fillColor: Color(0xFF1E1E1E))),
-              const SizedBox(height: 10),
-              TextField(controller: categoryCtrl, decoration: const InputDecoration(labelText: 'القسم (مطاعم / بيتزا / كافيهات)', filled: true, fillColor: Color(0xFF1E1E1E))),
-              const SizedBox(height: 10),
-              TextField(controller: feeCtrl, decoration: const InputDecoration(labelText: 'أجرة التوصيل', filled: true, fillColor: Color(0xFF1E1E1E))),
-              const SizedBox(height: 10),
-              TextField(controller: emojiCtrl, decoration: const InputDecoration(labelText: 'رمز الايموجي للمطعم', filled: true, fillColor: Color(0xFF1E1E1E))),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(backgroundColor: const Color(0xFFFF6B00)),
-                  onPressed: () {
-                    if (nameCtrl.text.isNotEmpty) {
-                      setState(() {
-                        globalRestaurants.add((
-                          name: nameCtrl.text,
-                          category: categoryCtrl.text,
-                          rating: '5.0',
-                          deliveryTime: '20-30 دقيقة',
-                          deliveryFee: feeCtrl.text,
-                          imageEmoji: emojiCtrl.text,
-                        ));
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمت إضافة المطعم بنجاح! 🎉')));
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text('حفظ المطعم الآن 💾', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        child: Column(
+          crossAxisAlignment: CrossAlignment.stretch,
+          children: [
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade900,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.shade700, width: 1.5),
                 ),
+                child: _selectedImage != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.add_photo_alternate, size: 50, color: Colors.amber),
+                          SizedBox(height: 10),
+                          Text('اضغط هنا لاختيار صورة الشارت من الاستوديو'),
+                        ],
+                      ),
               ),
-              const SizedBox(height: 40),
-              const Center(
-                child: Text('DEV: JMALALHSNAWE', style: TextStyle(fontSize: 10, color: Colors.grey, letterSpacing: 2)),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _isLoading || _selectedImage == null ? null : _analyzeChart,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber.shade700,
+                padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-            ],
-          ),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.black)
+                  : const Text('تحليل الشارت الآن', style: TextStyle(fontSize: 18, color: Colors.black)),
+            ),
+            const SizedBox(height: 20),
+            if (_analysisResult != null) _buildResultCard(),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildResultCard() {
+    final scenario = _analysisResult!['trade_scenario'];
+    final levels = _analysisResult!['key_levels'];
+    final isBuy = scenario['action'] == 'BUY';
+
+    return Card(
+      color: Colors.grey.shade900,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'التوصية: ${scenario['action']}',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: isBuy ? Colors.green : Colors.red,
+                  ),
+                ),
+                Chip(
+                  label: Text(_analysisResult!['trend'] ?? ''),
+                  backgroundColor: Colors.amber.shade900,
+                ),
+              ],
+            ),
+            const Divider(color: Colors.grey),
+            Text('النمط المكتشف: ${_analysisResult!['pattern_detected']}'),
+            const SizedBox(height: 8),
+            Text('الملخص: ${_analysisResult!['brief_summary']}'),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  _priceRow('نقطة الدخول:', scenario['entry_price']),
+                  _priceRow('الهدف الأول (TP1):', scenario['take_profit_1']),
+                  _priceRow('الهدف الثاني (TP2):', scenario['take_profit_2']),
+                  _priceRow('وقف الخسارة (SL):', scenario['stop_loss']),
+                  const Divider(color: Colors.grey),
+                  _priceRow('الدعم:', levels['support']),
+                  _priceRow('المقاومة:', levels['resistance']),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _priceRow(String title, dynamic value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(color: Colors.grey)),
+          Text(value?.toString() ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
       ),
     );
   }
