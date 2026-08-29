@@ -18,7 +18,7 @@ class ChartAnalysisApp extends StatelessWidget {
       title: 'تحليل الشارت',
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F172A), // خلفية كحلي داكن احترافية
+        scaffoldBackgroundColor: const Color(0xFF0F172A),
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFFF59E0B),
           secondary: Color(0xFF10B981),
@@ -114,9 +114,9 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
   }
 
   Color _getSignalColor(String? signal) {
-    if (signal == 'BUY') return const Color(0xFF10B981); // أخضر زمردي
-    if (signal == 'SELL') return const Color(0xFFEF4444); // أحمر ناري
-    return const Color(0xFFF59E0B); // أصفر ذهبي
+    if (signal == 'BUY') return const Color(0xFF10B981);
+    if (signal == 'SELL') return const Color(0xFFEF4444);
+    return const Color(0xFFF59E0B);
   }
 
   IconData _getSignalIcon(String? signal) {
@@ -145,7 +145,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // رفع الصورة / واجهة الشارت المتكاملة
             GestureDetector(
               onTap: _pickImage,
               child: Container(
@@ -195,8 +194,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // زر التحليل الرئيسي
             ElevatedButton(
               onPressed: _isLoading ? null : _analyzeChart,
               style: ElevatedButton.styleFrom(
@@ -220,8 +217,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                     ),
             ),
             const SizedBox(height: 24),
-
-            // كارت النتائج الذكية
             if (_analysisResult != null) ...[
               Card(
                 color: const Color(0xFF1E293B),
@@ -234,7 +229,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // القرار والنسبة المئوية
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -277,8 +271,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                         ],
                       ),
                       const Divider(color: Color(0xFF334155), height: 30),
-
-                      // البيانات الفنية
                       _buildInfoRow(Icons.show_chart_rounded, 'الاتجاه العام', _analysisResult!['trend'] ?? ''),
                       _buildInfoRow(Icons.candlestick_chart_rounded, 'النموذج الفني', _analysisResult!['pattern_detected'] ?? ''),
                       _buildInfoRow(
@@ -286,12 +278,9 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                         'الدعم والمقاومة',
                         'دعم: ${_analysisResult!['key_levels']?['support']} | مقاومة: ${_analysisResult!['key_levels']?['resistance']}',
                       ),
-
                       const SizedBox(height: 12),
                       const Divider(color: Color(0xFF334155)),
                       const SizedBox(height: 12),
-
-                      // تفاصيل الصفقة (TP / SL / Entry)
                       _buildInfoRow(Icons.login_rounded, 'سعر الدخول', _analysisResult!['trade_setup']?['entry'] ?? ''),
                       _buildInfoRow(
                         Icons.shield_rounded,
@@ -305,10 +294,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                         _analysisResult!['trade_setup']?['take_profit'] ?? '',
                         textColor: const Color(0xFF10B981),
                       ),
-
                       const Divider(color: Color(0xFF334155), height: 30),
-
-                      // الملخص
                       Row(
                         children: const [
                           Icon(Icons.description_rounded, color: Color(0xFFF59E0B), size: 20),
