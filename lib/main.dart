@@ -107,7 +107,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
       } else {
         setState(() {
           _analysisResult = "حدث خطأ في الاتصال (رمز الخطأ: ${response.statusCode})\nيرجى التحقق من المفتاح أو الاتصال بالشبكة.";
-        });
       }
     } catch (e) {
       setState(() {
