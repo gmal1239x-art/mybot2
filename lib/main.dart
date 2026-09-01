@@ -1,31 +1,21 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 
 void main() {
-  runApp(const ChartAnalysisApp());
+  runApp(const CashClipApp());
 }
 
-class ChartAnalysisApp extends StatelessWidget {
-  const ChartAnalysisApp({super.key});
+class CashClipApp extends StatelessWidget {
+  const CashClipApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'CashClip',
       debugShowCheckedModeBanner: false,
-      title: 'تحليل الشارت',
       theme: ThemeData(
-        brightness: Brightness.dark,
+        primarySwatch: Colors.green,
         scaffoldBackgroundColor: const Color(0xFF121212),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFFF590B),
-          secondary: Color(0xFF10B981),
-          surface: Color(0xFF1E293B),
-        ),
+        brightness: Brightness.dark,
       ),
       home: const MainHomeScreen(),
     );
@@ -40,155 +30,92 @@ class MainHomeScreen extends StatefulWidget {
 }
 
 class _MainHomeScreenState extends State<MainHomeScreen> {
-  File? _selectedImage;
-  bool _isLoading = false;
-  String? _analysisResult;
+  int _userPoints = 1250;
+  double _userBalance = 12.50; // كل 100 نقطة = 1 دولار (كمثال)
 
-  final ImagePicker _picker = ImagePicker();
-
-  // المفتاح الخاص بك والمستخرج من Google AI Studio
-  final String _apiKey = "AQ.Ab8RN6Ity9HQfa47bd0r6Jf5fyAm_akv7oZtuajLetzZFB3FfA";
-
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _selectedImage = File(image.path);
-        _analysisResult = null;
-      });
-    }
-  }
-
-  Future<void> _analyzeChart() async {
-    if (_selectedImage == null) return;
-
+  void _watchAdAndEarn() {
+    // محاكاة مشاهدة إعلان وحساب النقاط
     setState(() {
-      _isLoading = true;
+      _userPoints += 50;
+      _userBalance = _userPoints / 100;
     });
 
-    try {
-      List<int> imageBytes = await _selectedImage!.readAsBytes();
-      String base64Image = base64Encode(imageBytes);
-
-      final Uri url = Uri.parse(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$_apiKey",
-      );
-
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          "contents": [
-            {
-              "parts": [
-                {
-                  "text": "قم بتحليل صورة الشارت المرفقة تحليلاً فنياً دقيقاً. حدد الاتجاه العام، مستويات الدعم والمقاومة، والتوصية المتوقعة بناءً على الحركة السعرية والمؤشرات."
-                },
-                {
-                  "inline_data": {
-                    "mime_type": "image/jpeg",
-                    "data": base64Image
-                  }
-                }
-              ]
-            }
-          ]
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _analysisResult = data['candidates'][0]['content']['parts'][0]['text'];
-        });
-      } else {
-        setState(() {
-          _analysisResult = "حدث خطأ في الاتصال (رمز الخطأ: ${response.statusCode})\nيرجى التحقق من المفتاح أو الاتصال بالشبكة.";
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _analysisResult = "حدث خطأ غير متوقع: $e";
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('تمت مشاهدة الإعلان! أضيفت 50 نقطة لرصيدك 🎉'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("محلل الشارت الذكي"),
+        title: const Text('CashClip - كاش كليب', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
+        backgroundColor: Colors.black26,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            GestureDetector(
-              onTap: _pickImage,
-              child: Container(
-                height: 250,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white24),
+            // كارت الرصيد والنقاط
+            Card(
+              color: Colors.grey[900],
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    const Text('رصيدك الحالي', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                    const SizedBox(height: 10),
+                    Text('\$$_userBalance', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.greenAccent)),
+                    const Divider(color: Colors.grey),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.stars, color: Colors.amber),
+                        const SizedBox(width: 8),
+                        Text('$_userPoints نقطة', style: const TextStyle(fontSize: 20)),
+                      ],
+                    )
+                  ],
                 ),
-                child: _selectedImage != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.file(_selectedImage!, fit: BoxFit.cover),
-                      )
-                    : const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_photo_alternate, size: 50, color: Colors.white54),
-                            SizedBox(height: 8),
-                            Text("اضغط هنا لاختيار صورة الشارت", style: TextStyle(color: Colors.white54)),
-                          ],
-                        ),
-                      ),
               ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _isLoading || _selectedImage == null ? null : _analyzeChart,
+            const SizedBox(height: 40),
+
+            // زر مشاهدة الإعلانات
+            ElevatedButton.icon(
+              onPressed: _watchAdAndEarn,
+              icon: const Icon(Icons.play_circle_fill, size: 30),
+              label: const Text('شاهد إعلان واكسب نقاط', style: TextStyle(fontSize: 18)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
               ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text(
-                      "تحليل الشارت الآن",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
             ),
-            const SizedBox(height: 24),
-            if (_analysisResult != null)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: SelectableText(
-                  _analysisResult!,
-                  style: const TextStyle(fontSize: 14, height: 1.6),
-                ),
+            const SizedBox(height: 20),
+
+            // زر المحفظة والسحب
+            OutlinedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('حد السحب الأدنى هو 50\$')),
+                );
+              },
+              icon: const Icon(Icons.account_balance_wallet),
+              label: const Text('سحب الأرباح (Wallet)'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.grey),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
+            ),
           ],
         ),
       ),
