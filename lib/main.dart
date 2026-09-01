@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
   runApp(const CashClipApp());
 }
 
@@ -13,7 +16,6 @@ class CashClipApp extends StatelessWidget {
       title: 'CashClip',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.green,
         scaffoldBackgroundColor: const Color(0xFF121212),
         brightness: Brightness.dark,
       ),
@@ -31,21 +33,63 @@ class MainHomeScreen extends StatefulWidget {
 
 class _MainHomeScreenState extends State<MainHomeScreen> {
   int _userPoints = 1250;
-  double _userBalance = 12.50; // كل 100 نقطة = 1 دولار (كمثال)
+  double _userBalance = 12.50;
+  RewardedAd? _rewardedAd;
+  bool _isAdLoaded = false;
 
-  void _watchAdAndEarn() {
-    // محاكاة مشاهدة إعلان وحساب النقاط
-    setState(() {
-      _userPoints += 50;
-      _userBalance = _userPoints / 100;
-    });
+  final String _adUnitId = 'ca-app-pub-3940256099942544/5224354917';
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('تمت مشاهدة الإعلان! أضيفت 50 نقطة لرصيدك 🎉'),
-        backgroundColor: Colors.green,
+  @override
+  void initState() {
+    super.initState();
+    _loadRewardedAd();
+  }
+
+  void _loadRewardedAd() {
+    RewardedAd.load(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            _rewardedAd = ad;
+            _isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (error) {
+          setState(() {
+            _isAdLoaded = false;
+          });
+        },
       ),
     );
+  }
+
+  void _showRewardedAd() {
+    if (_rewardedAd != null && _isAdLoaded) {
+      _rewardedAd!.show(
+        onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+          setState(() {
+            _userPoints += 50;
+            _userBalance = _userPoints / 100;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('مبروك! شاهدت الإعلان واكتسبت 50 نقطة 🎉'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        },
+      );
+      _rewardedAd = null;
+      _isAdLoaded = false;
+      _loadRewardedAd();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('جاري تحميل الإعلان... حاول بعد ثوانٍ')),
+      );
+      _loadRewardedAd();
+    }
   }
 
   @override
@@ -61,7 +105,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // كارت الرصيد والنقاط
             Card(
               color: Colors.grey[900],
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -86,34 +129,15 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
               ),
             ),
             const SizedBox(height: 40),
-
-            // زر مشاهدة الإعلانات
             ElevatedButton.icon(
-              onPressed: _watchAdAndEarn,
-              icon: const Icon(Icons.play_circle_fill, size: 30),
-              label: const Text('شاهد إعلان واكسب نقاط', style: TextStyle(fontSize: 18)),
+              onPressed: _showRewardedAd,
+              icon: Icon(_isAdLoaded ? Icons.play_circle_fill : Icons.hourglass_top, size: 30),
+              label: Text(_isAdLoaded ? 'شاهد إعلان واكسب نقاط' : 'جاري تجهيز الإعلان...', style: const TextStyle(fontSize: 18)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // زر المحفظة والسحب
-            OutlinedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('حد السحب الأدنى هو 50\$')),
-                );
-              },
-              icon: const Icon(Icons.account_balance_wallet),
-              label: const Text('سحب الأرباح (Wallet)'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Colors.grey),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
             ),
           ],
